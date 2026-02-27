@@ -1,0 +1,219 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class YandexIAPManager : MonoBehaviour
+{
+    private static YandexIAPManager _instance;
+    public static YandexIAPManager Instance => _instance;
+
+    [Header("IAP Settings")]
+    public bool useSignedPayments = false;
+    [SerializeField] private IAPProductConfig[] productConfigs;
+
+    private YandexGamesPayments payments;
+    private bool isInitialized = false;
+    private Dictionary<string, IAPProductConfig> productConfigDict;
+
+    public static event Action OnPaymentsReady;
+    public static event Action<string> OnPurchaseSuccess;
+    public static event Action<string, string> OnPurchaseFailed;
+    public static event Action<List<IAPProduct>> OnCatalogLoaded;
+
+    void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+        
+        InitializeProductConfigs();
+    }
+
+    void Start()
+    {
+        InitializePayments();
+    }
+
+    private void InitializeProductConfigs()
+    {
+        productConfigDict = new Dictionary<string, IAPProductConfig>();
+        foreach (var config in productConfigs)
+        {
+            productConfigDict[config.productId] = config;
+        }
+    }
+
+    private async void InitializePayments()
+    {
+        try
+        {
+            payments = await YandexGamesSDK.Instance.GetPaymentsAsync(useSignedPayments);
+            isInitialized = true;
+            OnPaymentsReady?.Invoke();
+            await LoadCatalogAndRestore();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"IAP Init failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Универсальная покупка ПО ЛЮБОМУ productId
+    /// Автоматически определяет тип и обрабатывает
+    /// </summary>
+    public async Task<bool> PurchaseAsync(string productId, string developerPayload = "")
+    {
+        if (!isInitialized || !productConfigDict.ContainsKey(productId))
+        {
+            Debug.LogError($"Product {productId} not configured!");
+            return false;
+        }
+
+        try
+        {
+            var purchase = await payments.PurchaseAsync(productId, developerPayload);
+            var config = productConfigDict[productId];
+            
+            await ApplyPurchaseEffect(purchase, config);
+            
+            OnPurchaseSuccess?.Invoke(productId);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Purchase failed {productId}: {ex.Message}");
+            OnPurchaseFailed?.Invoke(productId, ex.Message);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Получить каталог всех товаров
+    /// </summary>
+    public async Task<List<IAPProduct>> GetCatalogAsync()
+    {
+        if (!isInitialized) return new List<IAPProduct>();
+        return await payments.GetCatalogAsync();
+    }
+
+    /// <summary>
+    /// Проверить статус конкретной постоянной покупки
+    /// </summary>
+    public bool IsPurchased(string productId)
+    {
+        if (!productConfigDict.ContainsKey(productId)) return false;
+        var config = productConfigDict[productId];
+        
+        if (config.productType == ProductType.Consumable)
+            return false; // consumable не "покупаются" навсегда
+            
+        return PlayerPrefs.GetInt($"IAP_{productId}", 0) == 1;
+    }
+
+    /// <summary>
+    /// Загрузить каталог + восстановить покупки
+    /// </summary>
+    private async Task LoadCatalogAndRestore()
+    {
+        var catalog = await GetCatalogAsync();
+        OnCatalogLoaded?.Invoke(catalog);
+        
+        await RestorePendingPurchases();
+    }
+
+    /// <summary>
+    /// ОБЯЗАТЕЛЬНАЯ проверка необработанных покупок
+    /// </summary>
+    private async Task RestorePendingPurchases()
+    {
+        var purchases = await payments.GetPurchasesAsync();
+        foreach (var purchase in purchases)
+        {
+            if (productConfigDict.TryGetValue(purchase.productID, out var config))
+            {
+                await ApplyPurchaseEffect(purchase, config);
+            }
+        }
+    }
+
+    // ========== CORE LOGIC ==========
+
+    private async Task ApplyPurchaseEffect(Purchase purchase, IAPProductConfig config)
+    {
+        switch (config.productType)
+        {
+            case ProductType.Consumable:
+                await ProcessConsumable(purchase, config);
+                break;
+            case ProductType.NonConsumable:
+                ProcessNonConsumable(purchase.productID);
+                break;
+        }
+    }
+
+    private async Task ProcessConsumable(Purchase purchase, IAPProductConfig config)
+    {
+        // Выполняем произвольное действие
+        await config.OnConsumableEffect?.Invoke(purchase);
+        
+        // Консумируем покупку (ОБЯЗАТЕЛЬНО!)
+        await payments.ConsumePurchaseAsync(purchase.purchaseToken);
+    }
+
+    private void ProcessNonConsumable(string productId)
+    {
+        PlayerPrefs.SetInt($"IAP_{productId}", 1);
+        PlayerPrefs.Save();
+        
+        productConfigDict[productId].OnNonConsumableEffect?.Invoke();
+    }
+
+    // ========== PUBLIC HELPERS ==========
+
+    public List<string> GetAllProducts() => productConfigDict.Keys.ToList();
+    public bool HasProduct(string productId) => productConfigDict.ContainsKey(productId);
+    public IAPProductConfig GetProductConfig(string productId) => productConfigDict.GetValueOrDefault(productId);
+}
+
+// ========== КОНФИГУРАЦИЯ ==========
+
+[System.Serializable]
+public enum ProductType
+{
+    Consumable,    // Одноразовые (золото, жизни)
+    NonConsumable  // Постоянные (VIP, отключить рекламу)
+}
+
+[System.Serializable]
+public class IAPProductConfig
+{
+    public string productId;           // ID из консоли Яндекс Игр
+    public ProductType productType;
+    
+    [Header("Consumable Effect (только для Consumable)")]
+    public UnityEngine.Events.UnityEvent<Purchase> OnConsumableEffect;
+    
+    [Header("Non-Consumable Effect (только для Non-Consumable)")]
+    public UnityEngine.Events.UnityEvent OnNonConsumableEffect;
+    
+    [TextArea(3,5)]
+    public string description;         // Для справки в инспекторе
+}
+
+// ========== Расширенный Product с ценой ==========
+
+[System.Serializable]
+public class IAPProduct : Product
+{
+    // Дополнения к базовому Product из SDK
+    public IAPProductConfig Config => YandexIAPManager.Instance?.GetProductConfig(id);
+    public bool IsOwned => YandexIAPManager.Instance?.IsPurchased(id) ?? false;
+    public ProductType Type => Config?.productType ?? ProductType.Consumable;
+}

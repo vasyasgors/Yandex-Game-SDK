@@ -1,0 +1,52 @@
+PurchaseOneTimeAsync(string productId)      // Одноразовая
+PurchasePermanentAsync(string productId)    // Постоянная
+
+
+new List<IAPPProductConfig>
+{
+	new IAPPProductConfig{"1", ProductType.NonConsumable, () => ..... },
+	new IAPPProductConfig{"2", ProductType.NonConsumable, () => ..... },
+	new IAPPProductConfig{"3", ProductType.Consumable, () => ..... },
+	
+}
+
+[System.Serializable]
+public enum ProductType
+{
+    Consumable,    // Одноразовые (золото, жизни)
+    NonConsumable  // Постоянные (VIP, отключить рекламу)
+}
+
+IProductConfig
+{
+	string ProductID;
+	ProductType Type;
+	Action Apply;???
+	
+}
+
+
+
+IPayments
+{
+	Init(List<IAPPProductConfig> catalog);
+	
+	PurchaseConsumable(string id, OnPurchaseSuccess, OnPurchaseError);
+	PurchaseNonConsumable(string id, OnPurchaseSuccess, OnPurchaseError);
+	
+	Consume(string id, OnPurchaseSuccess, OnPurchaseError);
+	
+	FetchProducts<T>(); // Catalog
+	
+	FetchPlayerPurchases<T>();
+		
+}
+
+
+Purchase[] allPurchase = FetchPlayerPurchases();
+
+for(int i = 0; i < allPurchase.Length; i++)
+{
+	просто выполнить код по id 
+}
+  

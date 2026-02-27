@@ -1,0 +1,241 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class YandexGamesIAP : MonoBehaviour
+{
+    private static YandexGamesIAP _instance;
+    public static YandexGamesIAP Instance => _instance;
+
+    [Header("Settings")]
+    public bool useSignedPayments = false; // true для серверной проверки
+    
+    private YandexGamesPayments payments;
+    private bool isInitialized = false;
+
+    public static event Action OnPaymentsReady;
+    public static event Action<string> OnPurchaseSuccess;
+    public static event Action<string> OnPurchaseFailed;
+
+    void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void Start()
+    {
+        InitializePayments();
+    }
+
+    private async void InitializePayments()
+    {
+        try
+        {
+            payments = await YandexGamesSDK.Instance.GetPaymentsAsync(useSignedPayments);
+            isInitialized = true;
+            OnPaymentsReady?.Invoke();
+            
+            // Проверяем необработанные покупки при запуске
+            await CheckPendingPurchases();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"IAP Init failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Одноразовая покупка (consumable)
+    /// </summary>
+    public async Task<bool> PurchaseConsumableAsync(string productId, string developerPayload = "")
+    {
+        if (!isInitialized) 
+        {
+            Debug.LogError("Payments not initialized!");
+            return false;
+        }
+
+        try
+        {
+            var purchase = await payments.PurchaseAsync(productId, developerPayload);
+            
+            // Начисляем награду и консумируем
+            await ProcessConsumablePurchase(purchase);
+            
+            OnPurchaseSuccess?.Invoke(productId);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Consumable purchase failed {productId}: {ex.Message}");
+            OnPurchaseFailed?.Invoke(productId);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Постоянная покупка (non-consumable)
+    /// </summary>
+    public async Task<bool> PurchaseNonConsumableAsync(string productId, string developerPayload = "")
+    {
+        if (!isInitialized) return false;
+
+        try
+        {
+            var purchase = await payments.PurchaseAsync(productId, developerPayload);
+            
+            // Для non-consumable просто сохраняем статус
+            SaveNonConsumablePurchase(productId);
+            
+            OnPurchaseSuccess?.Invoke(productId);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Non-consumable purchase failed {productId}: {ex.Message}");
+            OnPurchaseFailed?.Invoke(productId);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Получить каталог товаров
+    /// </summary>
+    public async Task<List<Product>> GetCatalogAsync()
+    {
+        if (!isInitialized) return new List<Product>();
+        
+        try
+        {
+            return await payments.GetCatalogAsync();
+        }
+        catch
+        {
+            return new List<Product>();
+        }
+    }
+
+    /// <summary>
+    /// Получить список всех покупок игрока
+    /// </summary>
+    public async Task<List<Purchase>> GetPurchasesAsync()
+    {
+        if (!isInitialized) return new List<Purchase>();
+        
+        return await payments.GetPurchasesAsync();
+    }
+
+    /// <summary>
+    /// Проверка и обработка необработанных покупок (ОБЯЗАТЕЛЬНО!)
+    /// </summary>
+    public async Task CheckPendingPurchases()
+    {
+        if (!isInitialized) return;
+        
+        var purchases = await GetPurchasesAsync();
+        foreach (var purchase in purchases)
+        {
+            await ProcessPendingPurchase(purchase);
+        }
+    }
+
+    // ========== ВНУТРЕННЯЯ ЛОГИКА ==========
+
+    private async Task ProcessConsumablePurchase(Purchase purchase)
+    {
+        // Пример: начисление золота
+        if (purchase.productID.Contains("gold"))
+        {
+            int goldAmount = GetGoldAmount(purchase.productID);
+            await YandexGamesPlayer.Instance.IncrementStatsAsync(new Dictionary<string, int> { { "gold", goldAmount } });
+        }
+        
+        // Консумируем покупку
+        await payments.ConsumePurchaseAsync(purchase.purchaseToken);
+    }
+
+    private async Task ProcessPendingPurchase(Purchase purchase)
+    {
+        // Определяем тип покупки и обрабатываем
+        if (IsConsumable(purchase.productID))
+        {
+            await ProcessConsumablePurchase(purchase);
+        }
+        else
+        {
+            SaveNonConsumablePurchase(purchase.productID);
+        }
+    }
+
+    private void SaveNonConsumablePurchase(string productId)
+    {
+        // Сохраняем статус постоянной покупки
+        var purchasedItems = PlayerPrefs.GetString("PurchasedItems", "");
+        if (!purchasedItems.Contains(productId))
+        {
+            PlayerPrefs.SetString("PurchasedItems", purchasedItems + "," + productId);
+            PlayerPrefs.Save();
+        }
+    }
+
+    private bool IsPurchasedNonConsumable(string productId)
+    {
+        var purchasedItems = PlayerPrefs.GetString("PurchasedItems", "");
+        return purchasedItems.Contains(productId);
+    }
+
+    // ========== УТИЛИТЫ ==========
+
+    private int GetGoldAmount(string productId)
+    {
+        if (productId.Contains("gold500")) return 500;
+        if (productId.Contains("gold1000")) return 1000;
+        return 0;
+    }
+
+    private bool IsConsumable(string productId)
+    {
+        // Логика определения типа покупки
+        return productId.Contains("gold") || productId.Contains("chest");
+    }
+
+    public bool IsNonConsumablePurchased(string productId)
+    {
+        return IsPurchasedNonConsumable(productId);
+    }
+}
+
+// ========== DTO ==========
+
+[System.Serializable]
+public class Product
+{
+    public string id;
+    public string title;
+    public string description;
+    public string imageURI;
+    public string price;
+    public string priceValue;
+    public string priceCurrencyCode;
+    
+    public string GetCurrencyImage(string size = "small")
+    {
+        // Реализация зависит от YandexGamesPayments
+        return "";
+    }
+}
+
+[System.Serializable]
+public class Purchase
+{
+    public string productID;
+    public string purchaseToken;
+    public string developerPayload;
+}
