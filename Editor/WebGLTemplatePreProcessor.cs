@@ -7,57 +7,20 @@ namespace YandexGameSdk
 {
     public class WebGLTemplatePreProcessor
     {
-        
-        private const string PackageName = "com.beardedschoolboy.yandexgamesdk"; 
-        private const string TemplateName = "YandexGameSimple";
+        private const string PackageName = "com.beardedschoolboy.yandexgamesdk";
 
-        private FileSystemWatcher _packageWatcher;
-
-
-        //[InitializeOnLoadMethod]
-        private static void InitPackageWatcher()
+        [MenuItem("Tools/YandexGameSDK/Update WebGL Template")]
+        private static void UpdateTemplateFromMenu()
         {
-            var helper = new WebGLTemplatePreProcessor();
-            helper.SetupWatcher(); 
+            CopyTemplateToAssets();
         }
 
-        private void SetupWatcher()
-        {
-            string packageRoot = GetPackageResolvedPath();
-            if (string.IsNullOrEmpty(packageRoot) || !Directory.Exists(packageRoot))
-            {
-                Debug.LogWarning($"[WebGLTemplatePreProcessor] Не удалось инициализировать вотчер. Путь к пакету: '{packageRoot}'");
-                return;
-            }
-
-            _packageWatcher?.Dispose();
-
-            _packageWatcher = new FileSystemWatcher(packageRoot, "*.*")
-            {
-                IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.LastWrite |
-                               NotifyFilters.FileName |
-                               NotifyFilters.DirectoryName
-            };
-
-            _packageWatcher.Changed += OnPackagesChanged;
-            _packageWatcher.Created += OnPackagesChanged;
-            _packageWatcher.Deleted += OnPackagesChanged;
-            _packageWatcher.Renamed += OnPackagesChanged;
-            _packageWatcher.EnableRaisingEvents = true;
-        }
-
-        private void OnPackagesChanged(object sender, FileSystemEventArgs e)
-        {
-            PreprocessTemplate();
-        }
-
-        private void PreprocessTemplate()
+        private static void CopyTemplateToAssets()
         {
             string packageRoot = GetPackageResolvedPath();
             if (string.IsNullOrEmpty(packageRoot))
             {
-                Debug.LogError($"[WebGLTemplatePreProcessor] Не удалось определить путь к пакету {PackageName}. Проверь установку пакета.");
+                Debug.LogError($"[WebGLTemplatePreProcessor] Не удалось определить путь к пакету {PackageName}. Проверьте установку пакета.");
                 return;
             }
 
@@ -69,18 +32,55 @@ namespace YandexGameSdk
                 return;
             }
 
-            string destinationFolder = Path.GetFullPath("Assets/WebGLTemplates/" + TemplateName);
+            string destinationFolder = Path.GetFullPath("Assets/WebGLTemplate");
 
+            try
+            {
+                // Создаем папку если её нет
+                Directory.CreateDirectory(destinationFolder);
 
-            FileUtil.ReplaceDirectory(sourceFolder, destinationFolder);
-            AssetDatabase.Refresh();
+                // Копируем ВСЕ содержимое из sourceFolder в destinationFolder
+                DirectoryCopy(sourceFolder, destinationFolder, true);
+
+                AssetDatabase.Refresh();
+
+                Debug.Log($"[WebGLTemplatePreProcessor] Содержимое WebGLTemplate успешно скопировано в Assets/WebGLTemplate!");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[WebGLTemplatePreProcessor] Ошибка при копировании шаблона: {ex.Message}");
+            }
         }
 
+        // Рекурсивное копирование содержимого директории
+        private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
+        {
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            // Копируем файлы из корня
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, true);
+            }
+
+            // Копируем подпапки
+            if (copySubDirs)
+            {
+                DirectoryInfo[] dirs = dir.GetDirectories();
+                foreach (DirectoryInfo subdir in dirs)
+                {
+                    string temppath = Path.Combine(destDirName, subdir.Name);
+                    Directory.CreateDirectory(temppath);
+                    DirectoryCopy(subdir.FullName, temppath, copySubDirs);
+                }
+            }
+        }
 
         private static string GetPackageResolvedPath()
         {
             string assetPath = $"Packages/{PackageName}";
-
             PackageInfo info = PackageInfo.FindForAssetPath(assetPath);
 
             if (info == null)
@@ -98,10 +98,5 @@ namespace YandexGameSdk
 
             return Path.GetFullPath(resolvedPath);
         }
-
-       
-        
-
     }
-
 }

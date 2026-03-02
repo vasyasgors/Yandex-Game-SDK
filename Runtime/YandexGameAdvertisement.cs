@@ -12,8 +12,6 @@ namespace YandexGameSdk
     {
         private const float FullscreenAdInterval = 60;
 
-  
-
         [DllImport("__Internal")] private static extern void YSDKShowFullscreenAd();
         [DllImport("__Internal")] private static extern void YSDKShowRewardedAd();
 
@@ -28,7 +26,7 @@ namespace YandexGameSdk
 
         public bool IsShowFullscreenAd = true;
         public bool IsShowRewardedAd = true;
-        public bool IsShowStickydBanner = true;
+        public bool IsShowStickyBanner = true;
 
         public bool IsRewardedShowed { get; private set; }
 
@@ -95,7 +93,7 @@ namespace YandexGameSdk
 
         public void ShowStickyBanner()
         {
-            if (IsShowStickydBanner == false) return;
+            if (IsShowStickyBanner == false) return;
 
             if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
             {
