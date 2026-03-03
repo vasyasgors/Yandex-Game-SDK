@@ -24,7 +24,7 @@ namespace YandexGameSdk
                 return;
             }
 
-            string sourceFolder = Path.Combine(packageRoot, "WebGLTemplate");
+            string sourceFolder = Path.Combine(packageRoot, "WebGLTemplates");
 
             if (!Directory.Exists(sourceFolder))
             {
@@ -32,7 +32,7 @@ namespace YandexGameSdk
                 return;
             }
 
-            string destinationFolder = Path.GetFullPath("Assets/WebGLTemplate");
+            string destinationFolder = Path.GetFullPath("Assets/WebGLTemplates");
 
             try
             {
@@ -44,7 +44,7 @@ namespace YandexGameSdk
 
                 AssetDatabase.Refresh();
 
-                Debug.Log($"[WebGLTemplatePreProcessor] Содержимое WebGLTemplate успешно скопировано в Assets/WebGLTemplate!");
+                Debug.Log($"[WebGLTemplatePreProcessor] Содержимое WebGLTemplate успешно скопировано в Assets/WebGLTemplates!");
             }
             catch (System.Exception ex)
             {
