@@ -148,6 +148,7 @@ namespace YandexGameSdk
             if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
             {
                 YSDKShowFullscreenAd();
+                DebugMessage("Show Fullscreen Ad");
             }
             else
             {
@@ -176,6 +177,7 @@ namespace YandexGameSdk
             if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
             {
                 YSDKShowRewardedAd();
+                DebugMessage("Show Rewarded Ad");
             }
             else
             {

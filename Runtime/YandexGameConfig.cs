@@ -8,6 +8,7 @@ namespace YandexGameSdk
         public bool BuildForYandexGame = true;
         public bool Debug = true;
         public bool UseInAppPurchases = false;
+
     }
 }
 
