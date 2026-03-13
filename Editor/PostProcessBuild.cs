@@ -13,9 +13,12 @@ public class PostProcessBuild
     {
         if (target == BuildTarget.WebGL)
         {
-            string version = PlayerSettings.bundleVersion; 
+            string version = PlayerSettings.bundleVersion;
             string parentDirectory = Directory.GetParent(pathToBuiltProject).FullName;
-            string archivePath = Path.Combine(parentDirectory, $"WebBuild_{version}.zip");
+
+            // Получаем имя папки билда
+            string folderName = Path.GetFileName(pathToBuiltProject.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            string archivePath = Path.Combine(parentDirectory, $"{folderName}_{version}.zip");
 
             if (File.Exists(archivePath))
                 File.Delete(archivePath);
