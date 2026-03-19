@@ -13,6 +13,7 @@ namespace YandexGameSdk
 
         [DllImport("__Internal")] private static extern bool YSDKIsMobile();
         [DllImport("__Internal")] private static extern bool YSDKInit();
+        [DllImport("__Internal")] private static extern string YSDKGetServerTime();
 
         public event UnityAction PageVisibilityOn;
         public event UnityAction PageVisibilityOff;
@@ -56,6 +57,11 @@ namespace YandexGameSdk
 
             return await yandexInitTask.Task;
 
+        }
+
+        public string GetServerTime()
+        {
+            return YSDKGetServerTime();
         }
 
         public void StopGame()

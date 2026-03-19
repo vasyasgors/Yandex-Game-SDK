@@ -267,5 +267,10 @@ mergeInto(LibraryManager.library,
 	},
 	
 	
+	YSDKGetServerTime : function(){
+		
+		return JSON.stringify( ysdk.serverTime());
+	},
+	
 	
 });
