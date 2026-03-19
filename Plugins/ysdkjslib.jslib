@@ -268,8 +268,6 @@ mergeInto(LibraryManager.library,
 	
 	
 	YSDKGetServerTime : function(){
-		
-		console.log('[Yandex Game SDK JS]: Server Time:', ysdk.serverTime(), JSON.stringify( ysdk.serverTime()));
 		return ysdk.serverTime();
 	},
 	
