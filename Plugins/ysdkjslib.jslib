@@ -267,8 +267,7 @@ mergeInto(LibraryManager.library,
 	},
 	
 	
-	YSDKGetServerTime : function(){
-		console.log('[Yandex Game SDK JS]: Error while open video ad:', ysdk.serverTime());
+	YSDKGetServerTimeMillisecond : function(){
 		return ysdk.serverTime();
 	},
 	
