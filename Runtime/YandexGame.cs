@@ -13,7 +13,7 @@ namespace YandexGameSdk
 
         [DllImport("__Internal")] private static extern bool YSDKIsMobile();
         [DllImport("__Internal")] private static extern bool YSDKInit();
-        [DllImport("__Internal")] private static extern string YSDKGetServerTime();
+        [DllImport("__Internal")] private static extern long YSDKGetServerTime();
 
         public event UnityAction PageVisibilityOn;
         public event UnityAction PageVisibilityOff;
@@ -59,9 +59,16 @@ namespace YandexGameSdk
 
         }
 
-        public string GetServerTime()
+        public long GetServerTime()
         {
-            return YSDKGetServerTime();
+            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            {
+                return System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            }
+            else
+            {
+                return YSDKGetServerTime();
+            }
         }
 
         public void StopGame()
