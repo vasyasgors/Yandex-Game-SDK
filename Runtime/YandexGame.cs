@@ -63,11 +63,11 @@ namespace YandexGameSdk
         {
             if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
             {
-                return System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                return YSDKGetServerTime();
             }
             else
             {
-                return YSDKGetServerTime();
+                return System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
         }
 
