@@ -8,6 +8,7 @@ namespace YandexGameSdk
     [DisallowMultipleComponent]
     public class YandexGame : YandexGameService
     {
+        [SerializeField] private YandexGameConfig config;
         [SerializeField] private YandexGameAdvertisement yandexGameAdvertisement;
         [SerializeField] private YandexGamePayments yandexGamePayments;
 
@@ -19,6 +20,9 @@ namespace YandexGameSdk
         public event UnityAction PageVisibilityOff;
 
         public bool IsMobile => CheckForMobile();
+        public YandexGameConfig Config => config;
+        public bool UseRealAPI => Application.platform == RuntimePlatform.WebGLPlayer && yandexGame.Config.BuildForYandexGame == true;
+
 
         private TaskCompletionSource<bool> yandexInitTask;
         private TaskCompletionSource<bool> unityInstanceInit;

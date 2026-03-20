@@ -50,7 +50,7 @@ namespace YandexGameSdk
 
             isGameReady = true;
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
                 YSDKGameplayAPIReady();
             else
                 DebugMessage("Gameplay ready!");
@@ -62,7 +62,7 @@ namespace YandexGameSdk
 
             isGameplayStarted = true;
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
                 YSDKGameplayAPIStart();
             else
                 DebugMessage("Gameplay start!");
@@ -74,7 +74,7 @@ namespace YandexGameSdk
 
             isGameplayStarted = false;
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
                 YSDKGameplayAPIStop();
             else
                 DebugMessage("Gameplay stop!");

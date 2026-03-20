@@ -12,7 +12,7 @@ namespace YandexGameSdk
 
         public string GetLanguageCode()
         {
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 return YSDKGetLanguage();
             }

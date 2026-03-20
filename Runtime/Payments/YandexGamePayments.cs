@@ -46,7 +46,7 @@ namespace YandexGameSdk
             this.allProducts = allProducts;
             initTask = new TaskCompletionSource<PaymentInitResult>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKInitPayments();
                 return await initTask.Task;
@@ -80,7 +80,7 @@ namespace YandexGameSdk
         {
             loadAllPurchasesTask = new TaskCompletionSource<Purchase[]>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKLoadPlayerPurchases();
                 return await loadAllPurchasesTask.Task;
@@ -144,7 +144,7 @@ namespace YandexGameSdk
                 return;
             }
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKStartPurchase(productID);
             }
@@ -195,7 +195,7 @@ namespace YandexGameSdk
         {
             consumePurchaseTask = new TaskCompletionSource<bool>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKConsumePurchase(purchaseToken);
                 return await consumePurchaseTask.Task;
@@ -227,7 +227,7 @@ namespace YandexGameSdk
         {
             consumePlayerPurchaseTask = new TaskCompletionSource<bool>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 Purchase[] playerPurchases = await LoadPlayerPurchases();
 
@@ -264,7 +264,7 @@ namespace YandexGameSdk
         {
             loadCatalogTask = new TaskCompletionSource<ProductList>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKLoadCatalog();
                 return await loadCatalogTask.Task;

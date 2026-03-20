@@ -95,7 +95,7 @@ namespace YandexGameSdk
         {
             if (IsShowStickyBanner == false) return;
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKShowStickyBanner();
             }
@@ -108,7 +108,7 @@ namespace YandexGameSdk
 
         public void HideStickyBanner()
         {
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKHideStickyBanner();
             }
@@ -145,7 +145,7 @@ namespace YandexGameSdk
 
 
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKShowFullscreenAd();
                 DebugMessage("Show Fullscreen Ad");
@@ -174,7 +174,7 @@ namespace YandexGameSdk
 
             yandexGame.StopGame();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKShowRewardedAd();
                 DebugMessage("Show Rewarded Ad");

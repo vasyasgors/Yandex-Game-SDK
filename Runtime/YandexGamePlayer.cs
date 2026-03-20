@@ -24,7 +24,7 @@ namespace YandexGameSdk
         {
             initialized = onInitialized;
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKInitPlayer();
             }
@@ -41,7 +41,7 @@ namespace YandexGameSdk
         {
             playerInitTask = new TaskCompletionSource<bool>();
 
-            if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
+            if (yandexGame.UseRealAPI == true)
             {
                 YSDKInitPlayer();
             }
