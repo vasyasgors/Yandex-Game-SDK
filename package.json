@@ -1,7 +1,7 @@
 {
   "name": "com.beardedschoolboy.yandexgamesdk",
   "displayName": "Yandex Game Sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "unity": "2020.0",
   "description": "Yandex Game Sdk"
 }
