@@ -38,7 +38,7 @@ namespace YandexGameSdk
         public async Task<bool> InitAsync()
         {
             yandexInitTask = new TaskCompletionSource<bool>();
-            unityInstanceInit = new TaskCompletionSource<bool>();
+            unityInstanceInit = new TaskCompletionSource<bool>(); 
 
            
             if (Application.platform == RuntimePlatform.WebGLPlayer && config.BuildForYandexGame == true)
