@@ -273,7 +273,7 @@ mergeInto(LibraryManager.library,
 		
 		var bufferSize = lengthBytesUTF8(time) + 1;
 		var buffer = _malloc(bufferSize);
-		stringToUTF8(lang, buffer, bufferSize);
+		stringToUTF8(time, buffer, bufferSize);
 		return buffer;
 	},
 	
