@@ -270,7 +270,12 @@ mergeInto(LibraryManager.library,
 	YSDKGetServerTimeMillisecond : function(){
 		var time = ysdk.serverTime();
 		console.log('[Yandex Game SDK JS]: Server time:', time);
-		return time;
+		gameInstance.SendMessage('YandexGame', 'OnServerTimeMillisecond', time);
+		
+		var bufferSize = lengthBytesUTF8(time) + 1;
+		var buffer = _malloc(bufferSize);
+		stringToUTF8(lang, buffer, bufferSize);
+		return buffer;
 	},
 	
 	
