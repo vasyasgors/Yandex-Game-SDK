@@ -7,9 +7,9 @@ namespace YandexGameSdk
     {
         protected YandexGame yandexGame;
 
-        private void Awake()
+        public void Construct(YandexGame yandexGame)
         {
-            yandexGame = GetComponent<YandexGame>();      
+            this.yandexGame = yandexGame;      
         }
 
         protected void DebugMessage(object message)

@@ -41,6 +41,11 @@ namespace YandexGameSdk
 
         public async Task<bool> InitAsync()
         {
+            YandexGameService[] yandexGameServices = GetComponents<YandexGameService>();
+
+            foreach (YandexGameService service in yandexGameServices)
+                service.Construct(this);
+
             yandexInitTask = new TaskCompletionSource<bool>();
             unityInstanceInit = new TaskCompletionSource<bool>(); 
 
