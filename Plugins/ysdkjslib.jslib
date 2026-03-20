@@ -271,9 +271,9 @@ mergeInto(LibraryManager.library,
 		var time = ysdk.serverTime();
 		console.log('[Yandex Game SDK JS]: Server time:', time);
 		
-		var bufferSize = lengthBytesUTF8(time) + 1;
+		var bufferSize = lengthBytesUTF8(time.toString()) + 1;
 		var buffer = _malloc(bufferSize);
-		stringToUTF8(time, buffer, bufferSize);
+		stringToUTF8(time.toString(), buffer, bufferSize);
 		return buffer;
 	},
 	
