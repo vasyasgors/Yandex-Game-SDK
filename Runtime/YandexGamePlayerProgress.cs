@@ -51,7 +51,7 @@ namespace YandexGameSdk
             }
             else
             {
-                cachedProgressLoaded?.Invoke(PlayerPrefs.GetString(ProgressPlayerPrefsKey));
+                cachedProgressLoaded?.Invoke(PlayerPrefs.GetString(ProgressPlayerPrefsKey, "{}"));
             }
 
          
@@ -69,7 +69,7 @@ namespace YandexGameSdk
             }
             else
             {
-                return PlayerPrefs.GetString(ProgressPlayerPrefsKey);
+                return PlayerPrefs.GetString(ProgressPlayerPrefsKey, "{}");
             }
         }
 
