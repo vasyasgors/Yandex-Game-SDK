@@ -8,6 +8,8 @@ namespace YandexGameSdk
     [DisallowMultipleComponent]
     public class YandexGamePlayerProgress : YandexGameService
     {
+        private const string ProgressPlayerPrefsKey = "YandexGamePlayerProgress";
+
         [DllImport("__Internal")] private static extern void YSDKSavePlayerProgress(string data);
         [DllImport("__Internal")] private static extern void YSDKLoadPlayerProgress();
 
@@ -18,9 +20,10 @@ namespace YandexGameSdk
 
         public void OnPlayerProgressLoaded(string progress)
         {
+
             DebugMessage("Progress loaded from yandex " + progress);
 
-            //  возвращает "{}" если прогресса у игрока нет. Нужно придумать, что можно сделать
+
             cachedProgressLoaded?.Invoke(progress);
             progressLoadTask.SetResult(progress);
 
@@ -29,22 +32,45 @@ namespace YandexGameSdk
 
         public void Save(string progress)
         {
-            YSDKSavePlayerProgress(progress);
+            if(yandexGame.UseRealAPI == true)
+            {
+                YSDKSavePlayerProgress(progress);
+            }
+            else
+            {
+                PlayerPrefs.SetString(ProgressPlayerPrefsKey, progress);
+            }
         }
 
         public void Load(UnityAction<string> onLoaded = null)
         {
-            cachedProgressLoaded = onLoaded;
-            YSDKLoadPlayerProgress();
+            if (yandexGame.UseRealAPI == true)
+            {
+                cachedProgressLoaded = onLoaded;
+                YSDKLoadPlayerProgress();
+            }
+            else
+            {
+                cachedProgressLoaded?.Invoke(PlayerPrefs.GetString(ProgressPlayerPrefsKey));
+            }
+
+         
         }
 
         public async Task<string> LoadAsync()
         {
-            YSDKLoadPlayerProgress();
+            if (yandexGame.UseRealAPI == true)
+            {
+                YSDKLoadPlayerProgress();
 
-            progressLoadTask = new TaskCompletionSource<string>();
+                progressLoadTask = new TaskCompletionSource<string>();
 
-            return await progressLoadTask.Task;
+                return await progressLoadTask.Task;
+            }
+            else
+            {
+                return PlayerPrefs.GetString(ProgressPlayerPrefsKey);
+            }
         }
 
     }
