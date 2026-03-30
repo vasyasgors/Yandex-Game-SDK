@@ -10,7 +10,6 @@ namespace YandexGameSdk
     {
         [SerializeField] private YandexGameConfig config;
         [SerializeField] private YandexGameAdvertisement yandexGameAdvertisement;
-        [SerializeField] private YandexGamePayments yandexGamePayments;
 
         [DllImport("__Internal")] private static extern bool YSDKIsMobile();
         [DllImport("__Internal")] private static extern bool YSDKInit();
