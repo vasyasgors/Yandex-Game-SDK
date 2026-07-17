@@ -8,7 +8,7 @@ using System.IO.Compression;
 
 public class PostProcessBuild 
 {
-    [PostProcessBuild]
+    //[PostProcessBuild]
     public static void CreateZip(BuildTarget target, string pathToBuiltProject)
     {
         if (target == BuildTarget.WebGL)
