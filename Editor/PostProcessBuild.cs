@@ -8,9 +8,11 @@ using System.IO.Compression;
 
 public class PostProcessBuild 
 {
-    //[PostProcessBuild]
+    /*
+    [PostProcessBuild]
     public static void CreateZip(BuildTarget target, string pathToBuiltProject)
     {
+        
         if (target == BuildTarget.WebGL)
         {
             string version = PlayerSettings.bundleVersion;
@@ -25,6 +27,6 @@ public class PostProcessBuild
 
             ZipFile.CreateFromDirectory(pathToBuiltProject, archivePath);
         }
-    }
+    } */
 
 }
